@@ -1,15 +1,15 @@
 import numpy as np
 
 def total_value_size(packing, valus, sizes, max_size):
-  # total value and size of a specified packing
-  v = 0.0  # total value of packing
-  s = 0.0  # total size of packing
+  # tổng giá trị và trọng lượng của mỗi tổ hợp
+  v = 0.0  # tổng giá trị của tổ hợp
+  s = 0.0  # tổng trọng lượng của tổ hợp
   n = len(packing)
   for i in range(n):
     if packing[i] == 1:
       v += valus[i]
       s += sizes[i]
-  if s > max_size:  # too big to fit in knapsack
+  if s > max_size:  # trọng lượng vượt quá giới hạn cho phép
     v = 0.0
   return (v, s)
 
@@ -25,7 +25,7 @@ def adjacent(packing, rnd):
 
 def solve(n_items, rnd, valus, sizes, max_size, \
   max_iter, start_temperature, alpha):
-  # solve using simulated annealing
+  # bắt đầu giải quyết bằng Simulated Annealing
   curr_temperature = start_temperature
   curr_packing = np.ones(n_items, dtype=np.int64)
   print("Khởi tạo giá trị ban đầu: ")
@@ -36,21 +36,19 @@ def solve(n_items, rnd, valus, sizes, max_size, \
   iteration = 0
   interval = (int)(max_iter / 10)
   while iteration < max_iter:
-    # pct_iters_left = \
-    #  (max_iter - iteration) / (max_iter * 1.0)
     adj_packing = adjacent(curr_packing, rnd)
     (adj_v, _) = total_value_size(adj_packing, \
       valus, sizes, max_size)
 
-    if adj_v > curr_valu:  # better so accept adjacent
+    if adj_v > curr_valu:  # giá trị của tổ hợp mới tốt hơn giá trị của tổ hợp cũ
       curr_packing = adj_packing; curr_valu = adj_v
-    else:          # adjacent packing is worse
+    else:          # giá trị của tổ hợp mới tệ hơn giá trị của tổ hợp cũ
       accept_p = \
         np.exp( (adj_v - curr_valu ) / curr_temperature ) 
       p = rnd.random()
-      if p < accept_p:  # accept worse packing anyway
+      if p < accept_p:  # nếu p nhỏ hơn ngưỡng p cho phép thì chấp nhận cả tổ hợp tệ hơn
         curr_packing = adj_packing; curr_valu = adj_v 
-      # else don't accept
+      
 
     if iteration % interval == 0:
       print("Số vòng lặp = %6d : Giá trị = %7.0f : \
@@ -61,8 +59,7 @@ def solve(n_items, rnd, valus, sizes, max_size, \
       curr_temperature = 0.00001
     else:
       curr_temperature *= alpha
-      # curr_temperature = start_temperature * \
-      # pct_iters_left * 0.0050
+      
     iteration += 1
 
   return curr_packing       
